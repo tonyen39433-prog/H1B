@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>西蓮淨苑歷史自導式參學任務</title>
+    <style>
+        :root {
+            --bg-color: #f5f1e8;
+            --main-green: #496b55;
+            --text-dark: #2f352f;
+            --card-bg: #fffdf7;
+            --accent-gold: #c59b4b;
+            --correct-bg: #e7f2e7;
+            --wrong-bg: #f8e8e2;
+            --locked-gray: #d4d4d0;
+            --font-serif: "Source Han Serif TC", "標楷體", serif;
+            --font-sans: "Source Han Sans TC", "微軟正黑體", sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            font-family: var(--font-sans);
+            line-height: 1.7;
+            font-size: 18px; /* 提升手機全域基礎字級 */
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            padding-bottom: 90px;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 720px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* 頂部固定進度列 */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #ffffff;
+            border-bottom: 2px solid #e0dcd3;
+            padding: 12px 8px;
+            display: flex;
+            justify-content: space-around;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .nav-step {
+            font-size: 1rem;
+            font-weight: bold;
+            color: var(--locked-gray);
+            padding: 6px 10px;
+            border-radius: 12px;
+        }
+
+        .nav-step.active {
+            background-color: var(--main-green);
+            color: #ffffff;
+        }
+
+        .nav-step.completed {
+            color: var(--accent-gold);
+        }
+
+        /* 卡牌共通格式 */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e8e2d5;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card-gold {
+            border: 2px solid var(--accent-gold);
+            background-color: #fffdf2;
+        }
+
+        .card-title {
+            font-family: var(--font-serif);
+            font-size: 1.5rem;
+            color: var(--main-green);
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        .card-subtitle {
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+            font-weight: bold;
+        }
+
+        p {
+            font-size: 1.15rem;
+        }
+
+        /* 對話框與旁白 */
+        .dialog-box {
+            background: #ffffff;
+            border-left: 5px solid var(--main-green);
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-top: 4px;
+        }
+
+        .dialog-box p {
+            font-size: 1.1rem;
+        }
+
+        .speaker {
+            font-weight: bold;
+            color: var(--main-green);
+            margin-bottom: 4px;
+            font-size: 1.05rem;
+        }
+
+        /* 信件專用樣式 */
+        .letter-paper {
+            background-color: #faf6ee;
+            border: 1px dashed var(--accent-gold);
+            border-radius: 8px;
+            padding: 18px;
+            font-family: var(--font-serif);
+            font-size: 1.25rem;
+            line-height: 1.8;
+        }
+
+        /* 多媒體響應式樣式 - contain 保證完整顯示不裁切 */
+        .responsive-img, .responsive-video {
+            width: 100%;
+            max-height: 280px; /* 保持適中高度 */
+            object-fit: contain; /* 改為 contain 確保圖像 100% 完整不被裁切 */
+            background-color: rgba(0, 0, 0, 0.03); /* 補滿底色讓圖框質感更佳 */
+            border-radius: 10px;
+            display: block;
+            margin: 6px 0;
+        }
+
+        .img-caption {
+            font-size: 1rem;
+            color: #555;
+            margin-top: -6px;
+            margin-bottom: 8px;
+        }
+
+        /* 按鈕共通格式 */
+        .btn {
+            border: none;
+            border-radius: 12px;
+            height: 52px;
+            font-size: 1.15rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background-color: var(--main-green);
+            color: #ffffff;
+        }
+
+        .btn-secondary {
+            background-color: #ffffff;
+            border: 2px solid var(--main-green);
+            color: var(--main-green);
+        }
+
+        .btn-next {
+            background-color: var(--accent-gold);
+            color: #ffffff;
+            margin-top: 10px;
+        }
+
+        .btn-small {
+            height: 42px;
+            font-size: 1rem;
+            width: auto;
+            padding: 0 16px;
+        }
+
+        /* 表單與題目樣式 */
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 8px 0;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #ffffff;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid #e0dcd3;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+
+        .option-item input[type="checkbox"], .option-item input[type="radio"] {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--main-green);
+            flex-shrink: 0;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background: #fff;
+            font-size: 1.1rem;
+            margin-top: 6px;
+        }
+
+        .feedback-box {
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 1.05rem;
+            line-height: 1.6;
+            display: none;
+        }
+        .feedback-correct { background-color: var(--correct-bg); color: #2d6a2f; }
+        .feedback-wrong { background-color: var(--wrong-bg); color: #a93226; }
+
+        /* 底部固定導覽 */
+        .footer-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #ffffff;
+            border-top: 1px solid #e0dcd3;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+            z-index: 99;
+        }
+
+        /* Modal 彈出視窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            padding: 22px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <!-- 頂部固定進度列 -->
+        <div class="top-nav">
+            <span class="nav-step active" id="nav-p0">序章</span>
+            <span class="nav-step" id="nav-p1">第一站</span>
+            <span class="nav-step" id="nav-p2">第二站</span>
+            <span class="nav-step" id="nav-p3">第三站</span>
+            <span class="nav-step" id="nav-p4">第四站</span>
+        </div>
+
+        <!-- Dynamic Content Container -->
+        <div id="game-flow" style="display: flex; flex-direction: column; gap: 16px;"></div>
+    </div>
+
+    <!-- 底部常駐列 -->
+    <div class="footer-nav">
+        <button class="btn btn-secondary btn-small" onclick="toggleLetterModal()">✉️ 查看信件進度</button>
+        <button class="btn btn-small" onclick="resetProgress()" style="background:transparent; color:#888;">重新開始</button>
+    </div>
+
+    <!-- 信件狀態彈出視窗 -->
+    <div class="modal" id="letter-modal">
+        <div class="modal-content">
+            <h3 class="card-title" style="margin-bottom: 12px;">✉️ 被雨淋濕的信</h3>
+            <div class="letter-paper" id="modal-letter-body">
+                <p><strong>第一段：</strong><span id="m-sec1">一座清淨道場，不是從華美的建築開始，而是從＿＿＿＿開始。</span></p>
+                <hr style="margin: 10px 0; border: none; border-top: 1px dashed #ccc;">
+                <p><strong>第二段：</strong>原本只是三年的約定，後來卻成為一生護法安僧、弘化利生的＿＿＿＿。</p>
+                <hr style="margin: 10px 0; border: none; border-top: 1px dashed #ccc;">
+                <p><strong>第三段：</strong>（尚未解鎖）</p>
+                <hr style="margin: 10px 0; border: none; border-top: 1px dashed #ccc;">
+                <p><strong>第四段：</strong>（尚未解鎖）</p>
+            </div>
+            <button class="btn btn-primary" style="margin-top: 16px;" onclick="toggleLetterModal()">關閉</button>
+        </div>
+    </div>
+
+<script>
+    function shuffleArray(array) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    const defaultState = {
+        currentBlock: 'sec-p00-01',
+        letterSection1: null,
+        seal1: false,
+        station1Unlocked: false,
+        station1Complete: false
+    };
+
+    let state = JSON.parse(localStorage.getItem('xilian_game_state')) || defaultState;
+
+    function saveState() {
+        localStorage.setItem('xilian_game_state', JSON.stringify(state));
+        updateNav();
+    }
+
+    function resetProgress() {
+        if (confirm("確定要清除目前進度，重新開始任務嗎？")) {
+            localStorage.removeItem('xilian_game_state');
+            state = { ...defaultState };
+            render();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function updateNav() {
+        const p0 = document.getElementById('nav-p0');
+        const p1 = document.getElementById('nav-p1');
+        const p2 = document.getElementById('nav-p2');
+
+        if (state.currentBlock === 'sec-p02-01') {
+            p0.className = 'nav-step completed';
+            p0.innerText = '序章 ✓';
+            p1.className = 'nav-step completed';
+            p1.innerText = '第一站 ✓';
+            p2.className = 'nav-step active';
+        } else if (state.station1Complete) {
+            p0.className = 'nav-step completed';
+            p0.innerText = '序章 ✓';
+            p1.className = 'nav-step completed';
+            p1.innerText = '第一站 ✓';
+            p2.className = 'nav-step';
+        } else if (state.station1Unlocked) {
+            p0.className = 'nav-step completed';
+            p0.innerText = '序章 ✓';
+            p1.className = 'nav-step active';
+            p2.className = 'nav-step';
+        } else {
+            p0.className = 'nav-step active';
+            p1.className = 'nav-step';
+            p2.className = 'nav-step';
+        }
+    }
+
+    function toggleLetterModal() {
+        const modal = document.getElementById('letter-modal');
+        const m1 = document.getElementById('m-sec1');
+        if (state.letterSection1) {
+            m1.innerHTML = `<span style="color:var(--main-green); font-weight:bold;">一座清淨道場，不是從華美的建築開始，而是從【${state.letterSection1}】開始。</span>`;
+        }
+        modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function switchBlock(targetId) {
+        const allBlocks = document.querySelectorAll('.card');
+        allBlocks.forEach(block => block.style.display = 'none');
+        
+        const target = document.getElementById(targetId);
+        if (target) {
+            target.style.display = 'flex';
+            state.currentBlock = targetId;
+            saveState();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function render() {
+        const container = document.getElementById('game-flow');
+        container.innerHTML = '';
+
+        // P00-01 封面
+        container.innerHTML += `
+            <div class="card" id="sec-p00-01">
+                <img src="01_01.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=雨後知客室與濕信封';">
+                <h2 class="card-title">西蓮淨苑歷史自導式參學任務</h2>
+                <span class="card-subtitle">序章｜一封被雨淋濕的信</span>
+                <p>一封被雨水沖淡的信，留下四段缺漏的文字。請陪同蓮花童子與馬花妹，走進西蓮淨苑的歷史，找回信中消失的內容。</p>
+                
+                <div style="background-color: #faf6ee; border: 1px solid var(--accent-gold); border-radius: 8px; padding: 14px; margin: 4px 0; font-size: 1rem; color: #555; line-height: 1.6;">
+                    <p style="font-weight: bold; color: var(--main-green); margin-bottom: 4px;">📜 創作說明：</p>
+                    本任務部分情境為配合參學體驗之遊戲設計。實際信件均由知客法師依規分類處理，若收件人不明，不會任意開啟；其餘人物、年代、事件與歷史內容，則依西蓮淨苑相關史料整理。
+                </div>
+
+                <button class="btn btn-primary" onclick="switchBlock('sec-p00-02')">開始任務</button>
+            </div>
+        `;
+
+        // P00-02 雨後的知客室
+        container.innerHTML += `
+            <div class="card" id="sec-p00-02" style="display:none;">
+                <span class="card-subtitle">雨剛停不久</span>
+                <p>知客室外的屋簷仍滴著水。蓮花童子正在整理今天收到的信件，將信封一封封擦乾、分類。</p>
+                <p>忽然，他發現最下面壓著一封被雨水淋濕的信。</p>
+                <img src="01_02.jpg" alt="蓮花童子在知客室整理信件" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=整理信件情境圖';">
+                <button class="btn btn-primary" onclick="switchBlock('sec-p00-03')">查看這封信</button>
+            </div>
+        `;
+
+        // P00-03 信封特寫
+        container.innerHTML += `
+            <div class="card" id="sec-p00-03" style="display:none;">
+                <img src="01_03.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=濕信封特寫（僅留「蓮」字）';">
+                <p>信封邊緣已經泡軟，墨水也暈成一片。原本寫在正面的收件人姓名幾乎完全模糊，只能隱約看見一個「蓮」字。</p>
+                <div class="dialog-box">
+                    <div class="speaker">蓮花童子</div>
+                    <p>「有一個『蓮』字……難道是寄給我的？」</p>
+                </div>
+                <button class="btn btn-primary" onclick="switchBlock('sec-p00-04')">打開信封</button>
+            </div>
+        `;
+
+        // P00-04 拆開信封
+        container.innerHTML += `
+            <div class="card" id="sec-p00-04" style="display:none;">
+                <img src="01_04.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=濕信紙圖片';">
+                <p>蓮花童子請示法師後，小心拆開信封。沒想到，信紙上的文字也被雨水沖淡了，許多地方出現空白。</p>
+                <div class="letter-paper">
+                    道場最初不是從建築開始，而是從＿＿＿＿開始
+                </div>
+                <div class="dialog-box"><div class="speaker">蓮花童子</div><p>「好多地方都看不清楚了。萬一有重要的事，那就糟了！」</p></div>
+                <div class="dialog-box"><div class="speaker">馬花妹</div><p>「什麼信？讓我看看……缺字前後都還留著一些線索。只要把消失的文字找回來，說定就能知道信裡想說什麼！」</p></div>
+                <button class="btn btn-primary" onclick="switchBlock('sec-p00-06')">尋找第一個線索</button>
+            </div>
+        `;
+
+        // P00-06 線索
+        container.innerHTML += `
+            <div class="card" id="sec-p00-06" style="display:none;">
+                <div class="letter-paper"><strong>信紙背面線索：</strong><br>道場建立以前</div>
+                <img src="01_05.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=二人望向知客室外';">
+                <div class="dialog-box"><div class="speaker">馬花妹</div><p>「道場建立以前？那不是什麼都沒有嗎？」</p></div>
+                <div class="dialog-box"><div class="speaker">蓮花童子</div><p>「我們先去看看，西蓮淨苑最初是什麼模樣。」</p></div>
+                <button class="btn btn-primary" onclick="switchBlock('sec-p00-07')">接受任務</button>
+            </div>
+        `;
+
+        // P00-07 序章完成指引
+        container.innerHTML += `
+            <div class="card card-gold" id="sec-p00-07" style="display:none;">
+                <h3 class="card-title">🎉 序章完成！前往第一站</h3>
+                <p>請依照紙本定向地圖，前往第二停車場旁的<strong>樁位5（淨苑的起點）</strong>。</p>
+                <img src="01_06.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=前往第一站地圖指引';">
+                <div style="font-size:1rem; color:#666; background:#eee; padding:10px; border-radius:6px;">
+                    ⚠️ 安全提醒：請依現場動線行走，注意車輛及階梯，請勿邊走邊看手機。
+                </div>
+                <button class="btn btn-primary" onclick="unlockStation1()">我已到達第一站</button>
+            </div>
+        `;
+
+        // P01-01 到站確認
+        container.innerHTML += `
+            <div class="card" id="sec-p01-01" style="display:none;">
+                <span class="card-subtitle">第一站｜淨苑的起點</span>
+                <h3 class="card-title">樁位5．第二停車場旁</h3>
+                <img src="01_07.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=第二停車場旁樁位5照片';">
+                <p>請確認你已站在安全、不妨礙車輛通行的位置。</p>
+                <button class="btn btn-primary" onclick="switchBlock('sec-p01-02')">我已安全到達，開始觀察</button>
+            </div>
+        `;
+
+        // P01-02 今日觀察
+        container.innerHTML += `
+            <div class="card" id="sec-p01-02" style="display:none;">
+                <img src="01_08.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=今日景致轉化示意圖';">
+                <h3 class="card-title">今天所見的淨苑，一開始就是這個模樣嗎？</h3>
+                <p><strong>今日觀察：</strong>請觀察你所在的位置，現在可以看見哪些景象？（可複選）</p>
+                <div class="option-group">
+                    <label class="option-item"><input type="checkbox"> 整理完善的道路</label>
+                    <label class="option-item"><input type="checkbox"> 階梯與淨苑建築</label>
+                    <label class="option-item"><input type="checkbox"> 竹子與停車場</label>
+                    <label class="option-item"><input type="checkbox"> 安靜整潔的環境</label>
+                </div>
+                <button class="btn btn-primary" onclick="switchBlock('sec-p01-05')">完成觀察，查看歷史資料</button>
+            </div>
+        `;
+
+        // P01-05 歷史資料與影片
+        container.innerHTML += `
+            <div class="card" id="sec-p01-05" style="display:none;">
+                <h3 class="card-title">看一看｜回到 1972 年的竹園</h3>
+                <p>年輕的慧修和尚尼第一次走進這片土地時，看見的是一片潮濕、泥濘、陰暗的竹林。</p>
+                
+                <img src="01_09.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=1.茂密竹林';">
+                <p class="img-caption">1. 當時竹林十分茂密，有些地方幾乎不見天日。</p>
+
+                <img src="01_10.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=2.泥土石子路';">
+                <p class="img-caption">2. 行走的路面混合石子與泥土，雨後更加泥濘。</p>
+
+                <img src="01_11.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=3.山泉與青苔';">
+                <p class="img-caption">3. 山泉從土中滲出，石頭與路面長滿青苔。</p>
+
+                <img src="01_12.jpg" class="responsive-img" onerror="this.src='https://placehold.co/600x400/496b55/fff?text=4.腐葉與雞鴨痕跡';">
+                <p class="img-caption">4. 地面堆積腐爛竹葉，留有雞鴨活動痕跡。</p>
+
+                <div style="background:#fff; border:1px solid #ddd; padding:12px; border-radius:8px; margin-top:8px;">
+                    <p style="color:var(--main-green); font-weight:bold; font-size:1.1rem; margin-bottom:6px;">🎬 選看｜慧修和尚尼開山回憶</p>
+                    <video controls playsinline class="responsive-video">
+                        <source src="01_v1.mp4" type="video/mp4">
+                        您的瀏覽器不支援影片播放。
+                    </video>
+                </div>
+
+                <button class="btn btn-primary" style="margin-top:12px;" onclick="switchBlock('sec-p01-06')">我看完了，進入【任務一】</button>
+            </div>
+        `;
+
+        // P01-06 任務一：1972年環境辨認
+        const rawTask1Options = [
+            { val: '1', text: '茂密的竹林', correct: true },
+            { val: '2', text: '石子與泥土混合的小路', correct: true },
+            { val: '3', text: '山泉滲出與青苔', correct: true },
+            { val: '4', text: '腐爛竹葉與雞鴨痕跡', correct: true },
+            { val: '5', text: '平整的柏油道路', correct: false },
+            { val: '6', text: '高大的教育中心與停車場', correct: false }
+        ];
+        const shuffledTask1Options = shuffleArray(rawTask1Options);
+        let task1Html = shuffledTask1Options.map(opt => `
+            <label class="option-item">
+                <input type="checkbox" class="t1-ans" value="${opt.val}" data-correct="${opt.correct}"> ${opt.text}
+            </label>
+        `).join('');
+
+        container.innerHTML += `
+            <div class="card" id="sec-p01-06" style="display:none;">
+                <h3 class="card-title">🎯 任務一｜回到 1972 年</h3>
+                <p>根據歷史資料與回憶，若你在民國 61 年（1972）來到此地，可能看見哪些景象？（請選出所有正確答案）</p>
+                <div class="option-group">${task1Html}</div>
+                <button class="btn btn-primary" onclick="checkTask1()">確認答案</button>
+                <div id="t1-fb" class="feedback-box" style="margin-top:8px;"></div>
+                <button id="t1-next-btn" class="btn btn-next" style="display:none;" onclick="switchBlock('sec-p01-09')">下一頁：進入【任務二】</button>
+            </div>
+        `;
+
+        // P01-09 任務二：三種眼光
+        container.innerHTML += `
+            <div class="card" id="sec-p01-09" style="display:none;">
+                <h3 class="card-title">🎯 任務二｜同一片土地，不同的感受</h3>
+                <p>1972年，三個人來到現場看地，各自抱持什麼眼光？請正確配對：</p>
+                
+                <div style="margin-top:10px;">
+                    <p><strong>1. 年輕時的慧修和尚尼：</strong></p>
+                    <select id="sel-1">
+                        <option value="">-- 請選擇觀點 --</option>
+                        <option value="B">認為土地可以靠人慢慢整理</option>
+                        <option value="A">感到害怕，不明白為什麼要住在這裡</option>
+                        <option value="C">看見住山念佛與建立道場的可能</option>
+                    </select>
+                </div>
+
+                <div style="margin-top:10px;">
+                    <p><strong>2. 傳放老師太：</strong></p>
+                    <select id="sel-2">
+                        <option value="">-- 請選擇觀點 --</option>
+                        <option value="C">看見住山念佛與建立道場的可能</option>
+                        <option value="A">感到害怕，不明白為什麼要住在這裡</option>
+                        <option value="B">認為土地可以靠人慢慢整理</option>
+                    </select>
+                </div>
+
+                <div style="margin-top:10px;">
+                    <p><strong>3. 智諭老和尚：</strong></p>
+                    <select id="sel-3">
+                        <option value="">-- 請選擇觀點 --</option>
+                        <option value="C">看見住山念佛與建立道場的可能</option>
+                        <option value="A">感到害怕，不明白為什麼要住在這裡</option>
+                        <option value="B">認為土地可以靠人慢慢整理</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-primary" style="margin-top:14px;" onclick="checkTask2()">確認配對</button>
+                <div id="t2-fb" class="feedback-box" style="margin-top:8px;"></div>
+                <button id="t2-next-btn" class="btn btn-next" style="display:none;" onclick="switchBlock('sec-p01-11')">下一頁：繼續閱讀對話</button>
+            </div>
+        `;
+
+        // P01-11 對話
+        container.innerHTML += `
+            <div class="card" id="sec-p01-11" style="display:none;">
+                <div class="dialog-box">
+                    <div class="speaker">馬花妹</div>
+                    <p>「慧修和尚尼說得沒錯，陰暗的竹林真的很讓人害怕。」</p>
+                </div>
+
+                <div class="dialog-box">
+                    <div class="speaker">蓮花童子</div>
+                    <p>「是啊，開闢這片土地，真的不簡單。」</p>
+                </div>
+
+                <div class="dialog-box">
+                    <div class="speaker">馬花妹</div>
+                    <p>「智諭老和尚和傳放老師太，看見了不同的可能。」</p>
+                </div>
+
+                <div class="dialog-box">
+                    <div class="speaker">蓮花童子</div>
+                    <p>「慧修和尚尼雖然一開始感到害怕，卻克服了障礙，勇敢承擔工作。」</p>
+                </div>
+
+                <div style="background-color: #faf6ee; padding: 16px; border-radius: 8px; margin-top: 8px; border-left: 4px solid var(--accent-gold);">
+                    <p style="font-weight: bold; color: var(--main-green); font-size: 1.2rem;">那麼，道場最初究竟從什麼開始？</p>
+                </div>
+
+                <button class="btn btn-primary" style="margin-top:12px;" onclick="switchBlock('sec-p01-12')">前往復原信件</button>
+            </div>
+        `;
+
+        // P01-12 信件第一段填空
+        const rawTask3Options = [
+            { val: '願心', text: '願心', correct: true },
+            { val: '財富', text: '財富', correct: false },
+            { val: '名氣', text: '名氣', correct: false },
+            { val: '運氣', text: '運氣', correct: false }
+        ];
+        const shuffledTask3Options = shuffleArray(rawTask3Options);
+        let task3Html = shuffledTask3Options.map(opt => `
+            <label class="option-item">
+                <input type="radio" name="word1" value="${opt.val}"> ${opt.text}
+            </label>
+        `).join('');
+
+        container.innerHTML += `
+            <div class="card" id="sec-p01-12" style="display:none;">
+                <h3 class="card-title">✉️ 第一段信件復原</h3>
+                <div class="letter-paper">
+                    「一座清淨道場，不是從華美的建築開始，而是從<span id="blank-1" style="color:var(--main-green); font-weight:bold; text-decoration:underline;">＿＿＿＿</span>開始。」
+                </div>
+                <p style="margin-top:8px;">請選擇最合適的詞語填入信件：</p>
+                <div class="option-group">${task3Html}</div>
+                <button class="btn btn-primary" onclick="checkTask3()">填入信件</button>
+                <div id="t3-fb" class="feedback-box" style="margin-top:8px;"></div>
+                <button id="t3-next-btn" class="btn btn-next" style="display:none;" onclick="switchBlock('sec-p01-14')">下一頁：進入通關與獎勵畫面</button>
+            </div>
+        `;
+
+        // P01-14 獎勵與反思填空
+        container.innerHTML += `
+            <div class="card card-gold" id="sec-p01-14" style="display:none;">
+                <h3 class="card-title" style="text-align:center;">🎉 任務完成！獲得【願心之印】</h3>
+                <img src="01_13.jpg" alt="願心之印" class="responsive-img" style="max-width:180px; margin:0 auto;" onerror="this.src='https://placehold.co/200x200/c59b4b/fff?text=願心之印';">
+                <p style="text-align:center; font-weight:bold; color:var(--accent-gold); font-size:1.2rem;">印記收集：【願心之印】</p>
+                <div class="letter-paper">
+                    「一座清淨道場，不是從華美的建築開始，而是從<strong>願心</strong>開始。」
+                </div>
+
+                <hr style="border:none; border-top:1px dashed #ccc; margin:12px 0;">
+
+                <h4 style="color:var(--main-green); font-size:1.3rem;">💭 參學反思</h4>
+                <p>你是否曾面對一件「條件還不完整，但值得開始」的事情？</p>
+                
+                <div style="margin-top:8px;">
+                    <label style="font-size:1.05rem; font-weight:bold;">我想開始的是：</label>
+                    <input type="text" id="reflect-1" placeholder="例如：學習一項新技能、養成運動習慣...">
+                </div>
+
+                <div style="margin-top:8px;">
+                    <label style="font-size:1.05rem; font-weight:bold;">我現在能先做的一小步是：</label>
+                    <input type="text" id="reflect-2" placeholder="例如：每天閱讀10分鐘、準備好工具...">
+                </div>
+
+                <button class="btn btn-primary" style="margin-top:14px;" onclick="submitReflection()">送出寫下願心</button>
+                
+                <div id="reflect-fb" class="feedback-box feedback-correct" style="margin-top:10px; line-height:1.7;">
+                    <strong>千里之行，始於足下。</strong><br>
+                    願心不是要求我們萬事俱備，也不是要一次完成，而是看清方向，從可以做到的地方開始。
+                </div>
+
+                <div id="next-station-box" style="display:none; margin-top:12px; border-top:1px solid #e0dcd3; padding-top:12px;">
+                    <p><strong>第二站線索：</strong>「原本只是三年的約定，後來卻成為一生護法安僧、弘化利生的＿＿＿＿」</p>
+                    <p style="font-size:1rem; color:#555; margin-bottom:8px;">📍 下一站地點：<strong>樁位1．知客室（三年之約）</strong></p>
+                    <button class="btn btn-next" onclick="goToStation2()">進入下一頁：第二站</button>
+                </div>
+            </div>
+        `;
+
+        // P02-01 第二站預留畫面
+        container.innerHTML += `
+            <div class="card" id="sec-p02-01" style="display:none;">
+                <span class="card-subtitle">第二站｜三年之約</span>
+                <h3 class="card-title">樁位1．知客室</h3>
+                <img src="01_14.jpg" class="responsive-img" alt="第二站知客室" onerror="this.onerror=null; this.src='https://placehold.co/600x400/496b55/fff?text=第二站知客室(01_14.jpg)';">
+                <p>你已順利到達第二站！請掃描QR code,探索接下來的故事……</p>
+            </div>
+        `;
+
+        switchBlock(state.currentBlock || 'sec-p00-01');
+    }
+
+    function unlockStation1() {
+        state.station1Unlocked = true;
+        saveState();
+        switchBlock('sec-p01-01');
+    }
+
+    // 任務一判定
+    function checkTask1() {
+        const inputs = Array.from(document.querySelectorAll('.t1-ans'));
+        const fb = document.getElementById('t1-fb');
+        const nextBtn = document.getElementById('t1-next-btn');
+
+        let allCorrect = true;
+        let selectedWrong = false;
+
+        inputs.forEach(input => {
+            const isCorrect = input.getAttribute('data-correct') === 'true';
+            if (input.checked && !isCorrect) {
+                selectedWrong = true;
+                allCorrect = false;
+            }
+            if (!input.checked && isCorrect) {
+                allCorrect = false;
+            }
+        });
+
+        fb.style.display = 'block';
+        if (allCorrect) {
+            fb.className = 'feedback-box feedback-correct';
+            fb.innerHTML = '✨ 觀察正確！1972年這裡尚未有今日的道路與建築，環境潮濕泥濘、竹林茂密。請點擊下方「下一頁」繼續。';
+            nextBtn.style.display = 'flex';
+        } else {
+            nextBtn.style.display = 'none';
+            fb.className = 'feedback-box feedback-wrong';
+            if (selectedWrong) {
+                fb.innerHTML = '❌ 你選到了一些現代才出現的景象（如柏油路或停車場），請再試一次。';
+            } else {
+                fb.innerHTML = '❌ 還漏掉了一些當時的真實環境狀況喔！請對照歷史圖文再選一次。';
+            }
+        }
+    }
+
+    // 任務二配對判定
+    function checkTask2() {
+        const s1 = document.getElementById('sel-1').value;
+        const s2 = document.getElementById('sel-2').value;
+        const s3 = document.getElementById('sel-3').value;
+        const fb = document.getElementById('t2-fb');
+        const nextBtn = document.getElementById('t2-next-btn');
+
+        fb.style.display = 'block';
+        if (s1 === 'A' && s2 === 'B' && s3 === 'C') {
+            fb.className = 'feedback-box feedback-correct';
+            fb.innerHTML = '✨ 完全配對正確！同在一片土地，有人看見困難，有人看見整理的可能，老和尚則看見建寺的願心與未來。請點擊「下一頁」繼續。';
+            nextBtn.style.display = 'flex';
+        } else {
+            nextBtn.style.display = 'none';
+            fb.className = 'feedback-box feedback-wrong';
+            if (s1 !== 'A') fb.innerHTML = '提示：慧修和尚尼當時年紀尚輕，第一次看到泥濘竹林最直接的感受是什麼？';
+            else if (s2 !== 'B') fb.innerHTML = '提示：傳放老師太強調的是「地是人整理出來的」喔！';
+            else fb.innerHTML = '提示：智諭老和尚看見的是在此處「住山念佛與建立道場」的方向。';
+        }
+    }
+
+    // 信件填空判定
+    function checkTask3() {
+        const selected = document.querySelector('input[name="word1"]:checked');
+        const fb = document.getElementById('t3-fb');
+        const nextBtn = document.getElementById('t3-next-btn');
+
+        if (!selected) {
+            alert("請先選擇一個詞語！");
+            return;
+        }
+
+        fb.style.display = 'block';
+        if (selected.value === '願心') {
+            fb.className = 'feedback-box feedback-correct';
+            fb.innerHTML = '🎉 正確！智諭老和尚先有住山念佛的「願心」，才一步步建設出今日的道場。請點擊下方「下一頁」領取通關獎勵！';
+            state.letterSection1 = '願心';
+            state.seal1 = true;
+            state.station1Complete = true;
+            saveState();
+            nextBtn.style.display = 'flex';
+        } else {
+            nextBtn.style.display = 'none';
+            fb.className = 'feedback-box feedback-wrong';
+            fb.innerHTML = `選擇「${selected.value}」：當時資源非常有限且荒涼，在建築與道路出現以前，最先出現的是內心的方向與信念。`;
+        }
+    }
+
+    // 自我反思填空提交
+    function submitReflection() {
+        const r1 = document.getElementById('reflect-1').value.trim();
+        const r2 = document.getElementById('reflect-2').value.trim();
+
+        if (!r1 || !r2) {
+            alert("請填寫完成兩個思考空格喔！");
+            return;
+        }
+
+        document.getElementById('reflect-fb').style.display = 'block';
+        document.getElementById('next-station-box').style.display = 'block';
+        
+        setTimeout(() => {
+            document.getElementById('reflect-fb').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
+
+    // 跳轉至第二站
+    function goToStation2() {
+        switchBlock('sec-p02-01');
+    }
+
+    window.onload = function() {
+        render();
+    };
+</script>
+</body>
+</html>
